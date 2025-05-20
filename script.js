@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
     const nameInput = document.getElementById('nameInput');
     const teamCountInput = document.getElementById('teamCount');
     const teamNamesInput = document.getElementById('teamNames');
@@ -9,92 +10,77 @@ document.addEventListener('DOMContentLoaded', function() {
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toastMessage');
     
-    // Initialize with sample data for testing
-    nameInput.value = "John, Jane, Mike, Sarah, David, Emily, Robert, Lisa, James, Emma";
+    // Initialize with sample data
+    nameInput.value = "John, Jane, Mike, Sarah, David, Emily";
     
+    // Event Listeners
     generateBtn.addEventListener('click', generateTeams);
     clearBtn.addEventListener('click', clearAll);
     copyBtn.addEventListener('click', copyTeams);
     
+    // Generate Teams Function
     function generateTeams() {
-        console.log("Generate button clicked"); // Debug log
-        
-        // Get input and split into array
-        let input = nameInput.value.trim();
-        
+        // Get and validate input
+        const input = nameInput.value.trim();
         if (!input) {
-            showError("Please enter some names first!");
+            showError("Please enter some names!");
             return;
         }
         
-        // Get number of teams
         const teamCount = parseInt(teamCountInput.value) || 2;
         if (teamCount < 2) {
-            showError("Please enter at least 2 teams");
+            showError("Minimum 2 teams required");
             return;
         }
         
-        // Get custom team names if provided
+        // Process team names
         let teamNames = [];
         if (teamNamesInput.value.trim()) {
-            teamNames = teamNamesInput.value.split(',').map(name => name.trim());
-            // If not enough team names, fill the rest with "Team X"
-            while (teamNames.length < teamCount) {
-                teamNames.push(`Team ${teamNames.length + 1}`);
-            }
-        } else {
-            // Default team names
-            for (let i = 1; i <= teamCount; i++) {
-                teamNames.push(`Team ${i}`);
-            }
+            teamNames = teamNamesInput.value.split(',')
+                .map(name => name.trim())
+                .filter(name => name);
         }
         
-        // Split by new lines or commas
-        let names = input.split(/[\n,]+/);
+        // Fill remaining team names if needed
+        while (teamNames.length < teamCount) {
+            teamNames.push(`Team ${teamNames.length + 1}`);
+        }
         
-        // Trim each name and filter out empty strings
-        names = names.map(name => name.trim()).filter(name => name.length > 0);
+        // Process participant names
+        const names = input.split(/[\n,]+/)
+            .map(name => name.trim())
+            .filter(name => name);
         
         if (names.length < teamCount) {
-            showError(`You need at least ${teamCount} names for ${teamCount} teams`);
+            showError(`Need at least ${teamCount} names`);
             return;
         }
         
-        // Shuffle the names array
-        const shuffledNames = shuffleArray([...names]);
-        console.log("Shuffled names:", shuffledNames); // Debug log
+        // Shuffle and distribute names
+        const shuffled = shuffleArray([...names]);
+        const teams = Array.from({length: teamCount}, (_, i) => ({
+            name: teamNames[i],
+            members: []
+        }));
         
-        // Create teams
-        const teams = [];
-        for (let i = 0; i < teamCount; i++) {
-            teams.push({
-                name: teamNames[i] || `Team ${i+1}`,
-                members: []
-            });
-        }
-        
-        // Distribute names to teams
-        shuffledNames.forEach((name, index) => {
-            teams[index % teamCount].members.push(name);
+        shuffled.forEach((name, i) => {
+            teams[i % teamCount].members.push(name);
         });
-        
-        console.log("Generated teams:", teams); // Debug log
         
         // Display teams
         displayTeams(teams);
     }
     
+    // Helper Functions
     function shuffleArray(array) {
-        const newArray = [...array];
-        for (let i = newArray.length - 1; i > 0; i--) {
+        for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            [array[i], array[j]] = [array[j], array[i]];
         }
-        return newArray;
+        return array;
     }
     
     function displayTeams(teams) {
-        console.log("Displaying teams:", teams); // Debug log
         teamsContainer.innerHTML = '';
         
         if (teams.length === 0) {
@@ -102,52 +88,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="empty-state">
                     <i class="fas fa-users-slash"></i>
                     <h3>No teams generated</h3>
-                    <p>Try entering more names or reducing the number of teams</p>
+                    <p>Try generating teams again</p>
                 </div>
             `;
             return;
         }
         
-        teams.forEach((team, index) => {
-            const teamCard = document.createElement('div');
-            teamCard.className = 'team-card';
+        teams.forEach(team => {
+            const card = document.createElement('div');
+            card.className = 'team-card';
             
-            const teamHeader = document.createElement('div');
-            teamHeader.className = 'team-header';
+            card.innerHTML = `
+                <div class="team-header">
+                    <div class="team-title">${team.name}</div>
+                    <div class="team-count">${team.members.length}</div>
+                </div>
+                <div class="team-members"></div>
+            `;
             
-            const teamTitle = document.createElement('div');
-            teamTitle.className = 'team-title';
-            teamTitle.textContent = team.name;
-            
-            const teamCount = document.createElement('div');
-            teamCount.className = 'team-count';
-            teamCount.textContent = team.members.length;
-            
-            teamHeader.appendChild(teamTitle);
-            teamHeader.appendChild(teamCount);
-            
-            const teamMembers = document.createElement('div');
-            teamMembers.className = 'team-members';
-            
-            team.members.forEach((member, memberIndex) => {
+            const membersContainer = card.querySelector('.team-members');
+            team.members.forEach(member => {
                 const memberDiv = document.createElement('div');
                 memberDiv.className = 'member';
-                
-                const memberAvatar = document.createElement('div');
-                memberAvatar.className = 'member-avatar';
-                memberAvatar.textContent = member.charAt(0).toUpperCase();
-                
-                const memberName = document.createElement('div');
-                memberName.textContent = member;
-                
-                memberDiv.appendChild(memberAvatar);
-                memberDiv.appendChild(memberName);
-                teamMembers.appendChild(memberDiv);
+                memberDiv.innerHTML = `
+                    <div class="member-avatar">${member.charAt(0).toUpperCase()}</div>
+                    <div>${member}</div>
+                `;
+                membersContainer.appendChild(memberDiv);
             });
             
-            teamCard.appendChild(teamHeader);
-            teamCard.appendChild(teamMembers);
-            teamsContainer.appendChild(teamCard);
+            teamsContainer.appendChild(card);
         });
     }
     
@@ -158,35 +128,33 @@ document.addEventListener('DOMContentLoaded', function() {
         teamsContainer.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-users-slash"></i>
-                <h3>No teams generated yet</h3>
-                <p>Enter names and click "Generate Teams" to create random teams</p>
+                <h3>No teams yet</h3>
+                <p>Enter names and generate teams</p>
             </div>
         `;
     }
     
     function copyTeams() {
         const teams = Array.from(document.querySelectorAll('.team-card'));
-        if (teams.length === 0) {
+        if (!teams.length) {
             showError("No teams to copy");
             return;
         }
         
-        let textToCopy = "Generated Teams:\n\n";
-        
+        let text = "Generated Teams:\n\n";
         teams.forEach(team => {
-            const teamName = team.querySelector('.team-title').textContent;
+            const name = team.querySelector('.team-title').textContent;
             const members = Array.from(team.querySelectorAll('.member div:last-child'))
-                .map(member => member.textContent)
+                .map(el => el.textContent)
                 .join(', ');
-            
-            textToCopy += `${teamName}: ${members}\n`;
+            text += `${name}: ${members}\n`;
         });
         
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            showToast("Teams copied to clipboard!");
+        navigator.clipboard.writeText(text).then(() => {
+            showToast("Teams copied!");
         }).catch(err => {
-            showError("Failed to copy teams");
-            console.error('Failed to copy: ', err);
+            showError("Failed to copy");
+            console.error(err);
         });
     }
     
@@ -208,14 +176,10 @@ document.addEventListener('DOMContentLoaded', function() {
         toast.classList.add('show');
         
         setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => {
-                toast.classList.remove('error');
-                toast.querySelector('i').className = 'fas fa-check-circle';
-            }, 300);
+            toast.classList.remove('show', 'error');
         }, 3000);
     }
     
-    // Test the generate function immediately
+    // Initial generation
     generateTeams();
 });

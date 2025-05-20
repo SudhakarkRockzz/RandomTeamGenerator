@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Generator | Beautiful UI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Team Generator</h1>
+            <p class="subtitle">Create balanced teams from a list of names</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="input-section">
+                <h2><i class="fas fa-users"></i> Input Names</h2>
+                
+                <div class="form-group">
+                    <label for="nameInput">Enter names (one per line or comma separated)</label>
+                    <textarea id="nameInput" placeholder="John, Jane, Mike, Sarah, David, Emily..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="teamCount">Number of teams</label>
+                    <input type="number" id="teamCount" min="2" value="2">
+                </div>
+                
+                <div class="form-group">
+                    <label for="teamNames">Team names (optional, comma separated)</label>
+                    <input type="text" id="teamNames" placeholder="Red, Blue, Green...">
+                </div>
+                
+                <div class="btn-group">
+                    <button id="generateBtn" class="btn btn-primary">
+                        <i class="fas fa-random"></i> Generate Teams
+                    </button>
+                    <button id="clearBtn" class="btn btn-secondary">
+                        <i class="fas fa-trash-alt"></i> Clear
+                    </button>
+                </div>
+            </div>
+            
+            <div class="output-section">
+                <div class="output-header">
+                    <h2><i class="fas fa-list-ol"></i> Generated Teams</h2>
+                    <button id="copyBtn" class="copy-btn">
+                        <i class="far fa-copy"></i> Copy
+                    </button>
+                </div>
+                
+                <div class="teams-container" id="teamsContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-users-slash"></i>
+                        <h3>No teams generated yet</h3>
+                        <p>Enter names and click "Generate Teams" to create random teams</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Teams copied to clipboard!</span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
